@@ -36,16 +36,13 @@ var tf = []*node.FactoryNode{
 	terminal.NewNumberVariableFactory(X, Y),
 }
 
-// var dataset = []struct {
-// 	vars   []interface{}
-// 	result interface{}
-// }{
-// 	{[]interface{}{float64(1), float64(1)}, float64(2)},
-// 	{[]interface{}{float64(1), float64(2)}, float64(3)},
-// 	{[]interface{}{float64(2), float64(2)}, float64(4)},
-// 	{[]interface{}{float64(5), float64(1)}, float64(6)},
-// 	{[]interface{}{float64(5), float64(5)}, float64(10)},
-// }
+var dataset = []utils.Data{
+	{[]interface{}{float64(1), float64(1)}, float64(2)},
+	{[]interface{}{float64(1), float64(2)}, float64(3)},
+	{[]interface{}{float64(2), float64(2)}, float64(4)},
+	{[]interface{}{float64(5), float64(1)}, float64(6)},
+	{[]interface{}{float64(5), float64(5)}, float64(10)},
+}
 
 var sumDataset = &utils.DataSet{
 	From:     float64(-5),
@@ -71,7 +68,8 @@ var funcDataset = &utils.DataSet{
 	},
 }
 
-var data = sumDataset.Generate()
+//var data = sumDataset.Generate()
+var data = dataset
 
 type Gnome struct {
 	n node.Node
