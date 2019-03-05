@@ -30,7 +30,7 @@ func (f *sum) Type() node.Type {
 }
 
 func (f *sum) Eval(ctx context.Context) interface{} {
-	return cast.ToFloat64(f.L.Eval(ctx)) + cast.ToFloat64(f.R.Eval(ctx))
+	return cast.ToInt(f.L.Eval(ctx)) + cast.ToInt(f.R.Eval(ctx))
 }
 
 func (f *sum) String() string {
@@ -62,7 +62,7 @@ func (f *sub) Type() node.Type {
 }
 
 func (f *sub) Eval(ctx context.Context) interface{} {
-	return cast.ToFloat64(f.L.Eval(ctx)) - cast.ToFloat64(f.R.Eval(ctx))
+	return cast.ToInt(f.L.Eval(ctx)) - cast.ToInt(f.R.Eval(ctx))
 }
 
 func (f *sub) String() string {
@@ -95,7 +95,7 @@ func (f *multiply) Type() node.Type {
 }
 
 func (f *multiply) Eval(ctx context.Context) interface{} {
-	return cast.ToFloat64(f.L.Eval(ctx)) * cast.ToFloat64(f.R.Eval(ctx))
+	return cast.ToInt(f.L.Eval(ctx)) * cast.ToInt(f.R.Eval(ctx))
 }
 
 func (f *multiply) String() string {
@@ -128,7 +128,12 @@ func (f *divide) Type() node.Type {
 }
 
 func (f *divide) Eval(ctx context.Context) interface{} {
-	return cast.ToFloat64(f.L.Eval(ctx)) / cast.ToFloat64(f.R.Eval(ctx))
+	div := cast.ToInt(f.R.Eval(ctx))
+	if div == 0 {
+		return 0
+	}
+
+	return cast.ToInt(f.L.Eval(ctx)) / div
 }
 
 func (f *divide) String() string {

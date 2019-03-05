@@ -6,6 +6,8 @@ import (
 	"math"
 	"math/rand"
 
+	"github.com/jinzhu/copier"
+
 	"github.com/ajnavarro/genprog/node"
 	"github.com/ajnavarro/genprog/node/function"
 	"github.com/ajnavarro/genprog/node/terminal"
@@ -36,47 +38,52 @@ var tf = []*node.FactoryNode{
 	terminal.NewNumberVariableFactory(X, Y),
 }
 
-var dataset = []utils.Data{
-	{[]interface{}{float64(1), float64(1)}, float64(2)},
-	{[]interface{}{float64(1), float64(2)}, float64(3)},
-	{[]interface{}{float64(2), float64(2)}, float64(4)},
-	{[]interface{}{float64(5), float64(1)}, float64(6)},
-	{[]interface{}{float64(5), float64(5)}, float64(10)},
-}
-
 var sumDataset = &utils.DataSet{
-	From:     float64(-5),
-	To:       float64(5),
-	NSamples: 50,
+	From:     -5,
+	To:       5,
+	NSamples: 5,
 	NVars:    2,
 	Evaluator: func(ins ...interface{}) interface{} {
-		v1 := ins[0].(float64)
-		v2 := ins[0].(float64)
-		return v1 + v2
+		v1 := ins[0].(int)
+		v2 := ins[1].(int)
+		out := v1 + v2
+
+		return out
 	},
 }
 
 var funcDataset = &utils.DataSet{
-	From:     float64(-5),
-	To:       float64(5),
-	NSamples: 100,
-	NVars:    2,
+	From:     -5,
+	To:       5,
+	NSamples: 10,
+	NVars:    3,
 	Evaluator: func(ins ...interface{}) interface{} {
-		v1 := ins[0].(float64)
-		v2 := ins[0].(float64)
-		return v1*v1 + v2 - float64(3)
+		v1 := ins[0].(int)
+		v2 := ins[1].(int)
+		return v1*v1 + v2 - 3
 	},
 }
 
-//var data = sumDataset.Generate()
-var data = dataset
+var func2Dataset = &utils.DataSet{
+	From:     -5,
+	To:       5,
+	NSamples: 10,
+	NVars:    3,
+	Evaluator: func(ins ...interface{}) interface{} {
+		v1 := ins[0].(int)
+		v2 := ins[1].(int)
+		return v1*v1 + v2 - 3 + v1*v2
+	},
+}
+
+var data = funcDataset.Generate()
 
 type Gnome struct {
 	n node.Node
 	m utils.GenerationMethod
 }
 
-func (g Gnome) Evaluate() (float64, error) {
+func (g *Gnome) Evaluate() (float64, error) {
 	var absError float64
 	for _, ds := range data {
 		ctx := context.TODO()
@@ -92,53 +99,51 @@ func (g Gnome) Evaluate() (float64, error) {
 		case node.Boolean:
 			panic("boolean type not implemented")
 		case node.Number:
-			dsResult := ds.Result.(float64)
-			gnomeResult := result.(float64)
-			abs := math.Abs(dsResult - gnomeResult)
+			dsResult := ds.Result.(int)
+			gnomeResult := result.(int)
+			abs := math.Abs(float64(dsResult - gnomeResult))
 			absError = absError + abs
 		}
 	}
-
-	return absError, nil
+	return float64(absError), nil
 }
 
-func (g Gnome) Mutate(rng *rand.Rand) {
+func (g *Gnome) Mutate(rng *rand.Rand) {
 	r := rng.Float64()
-	random := utils.GenerateRandomTree(ff, tf, maxDepth, g.m)
+	random := utils.GenerateRandomTree(rng, ff, tf, maxDepth, g.m)
 	branchingFactor := 1
 	if r > 0.89 {
-		// functions with branching factor between 2 and 3
-		branchingFactor = rng.Intn(4) + 1
+		// functions with branching factor
+		branchingFactor = rng.Intn(maxDepth) + 1
 	}
-
-	node, err := utils.Crossover(branchingFactor, g.n, random)
+	node, err := utils.Crossover(rng, branchingFactor, g.n, random)
 	if err != nil {
 		panic(fmt.Errorf("Error on mutation", err))
 	}
+
 	g.n = node
 }
 
-func (g Gnome) Crossover(genome eaopt.Genome, rng *rand.Rand) {
-	r := rng.Float64()
+func (g *Gnome) Crossover(genome eaopt.Genome, rng *rand.Rand) {
 	gen := genome.(*Gnome)
+
+	r := rng.Float64()
 	branchingFactor := 1
 	if r > 0.89 {
-		// functions with branching factor between 2 and 3
-		branchingFactor = rng.Intn(4) + 1
+		// functions with branching factor
+		branchingFactor = rng.Intn(maxDepth) + 1
 	}
-
-	node, err := utils.Crossover(branchingFactor, g.n, gen.n)
+	node, err := utils.Crossover(rng, branchingFactor, g.n, gen.n)
 	if err != nil {
 		panic(fmt.Errorf("Error on crossover", err))
 	}
 	g.n = node
 }
 
-func (g Gnome) Clone() eaopt.Genome {
-	return &Gnome{
-		m: g.m,
-		n: g.n,
-	}
+func (g *Gnome) Clone() eaopt.Genome {
+	out := &Gnome{}
+	copier.Copy(&out, &g)
+	return out
 }
 
 func GenomeFactory(rng *rand.Rand) eaopt.Genome {
@@ -150,7 +155,7 @@ func GenomeFactory(rng *rand.Rand) eaopt.Genome {
 
 	return &Gnome{
 		m: m,
-		n: utils.GenerateRandomTree(ff, tf, maxDepth, m),
+		n: utils.GenerateRandomTree(rng, ff, tf, maxDepth, m),
 	}
 }
 
@@ -161,12 +166,11 @@ func main() {
 		return
 	}
 
-	ga.NPops = 10
-	ga.PopSize = 50
+	ga.NPops = 100
 	ga.NGenerations = 10000
-	ga.HofSize = 10
-	ga.ParallelEval = false
-
+	ga.PopSize = 50
+	ga.HofSize = 5
+	ga.ParallelEval = true
 	ga.Callback = func(ga *eaopt.GA) {
 		var totalFitness float64 = 0
 		for _, f := range ga.HallOfFame {

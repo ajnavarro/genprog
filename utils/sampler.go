@@ -1,6 +1,8 @@
 package utils
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 type Data struct {
 	Vars   []interface{}
@@ -9,16 +11,16 @@ type Data struct {
 
 type DataSet struct {
 	// TODO make this work with other kind of inputs
-	From, To  float64
+	From, To  int
 	NSamples  int
 	NVars     int
 	Evaluator func(ins ...interface{}) interface{}
 }
 
 func (d *DataSet) Generate() []*Data {
-	var varSamples [][]float64
+	var varSamples [][]int
 	for i := 0; i < d.NVars; i++ {
-		varSamples = append(varSamples, randFloats(d.From, d.To, d.NSamples))
+		varSamples = append(varSamples, randInts(d.From, d.To, d.NSamples))
 	}
 
 	var data []*Data
@@ -40,10 +42,10 @@ func (d *DataSet) Generate() []*Data {
 	return data
 }
 
-func randFloats(min, max float64, n int) []float64 {
-	res := make([]float64, n)
+func randInts(min, max int, n int) []int {
+	res := make([]int, n)
 	for i := range res {
-		res[i] = min + rand.Float64()*(max-min)
+		res[i] = rand.Intn(max-min) + min
 	}
 	return res
 }

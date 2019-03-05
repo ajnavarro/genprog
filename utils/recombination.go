@@ -1,11 +1,13 @@
 package utils
 
 import (
+	"math/rand"
+
 	"github.com/ajnavarro/genprog/node"
 	"github.com/jinzhu/copier"
 )
 
-func Crossover(branchingFactor int, p1, p2 node.Node) (node.Node, error) {
+func Crossover(rnd *rand.Rand, branchingFactor int, p1, p2 node.Node) (node.Node, error) {
 	var p1Copy node.Node
 	if err := copier.Copy(&p1Copy, &p1); err != nil {
 		return nil, err
@@ -16,18 +18,18 @@ func Crossover(branchingFactor int, p1, p2 node.Node) (node.Node, error) {
 		return nil, err
 	}
 
-	return walk(branchingFactor, p1Copy, p2Copy), nil
+	return walk(rnd, branchingFactor, p1Copy, p2Copy), nil
 }
 
-func walk(bf int, p1, p2 node.Node) node.Node {
+func walk(rnd *rand.Rand, bf int, p1, p2 node.Node) node.Node {
 	bfp1 := BranchingFactor(p1)
 	if bfp1 <= bf {
-		return getCrossoverNode(bf, p2)
+		return getCrossoverNode(rnd, bf, p2)
 	}
 	children := p1.Children()
-	shuffle := getRandom().Perm(len(children))
+	shuffle := rnd.Perm(len(children))
 	for _, idx := range shuffle {
-		result := walk(bf, children[idx], p2)
+		result := walk(rnd, bf, children[idx], p2)
 		if result == nil {
 			continue
 		}
@@ -40,13 +42,13 @@ func walk(bf int, p1, p2 node.Node) node.Node {
 	return nil
 }
 
-func getCrossoverNode(bf int, p node.Node) node.Node {
+func getCrossoverNode(rnd *rand.Rand, bf int, p node.Node) node.Node {
 	bfp := BranchingFactor(p)
 	if bfp <= bf {
 		return p
 	}
 
-	return getCrossoverNode(bf, pickOneNode(p.Children()))
+	return getCrossoverNode(rnd, bf, pickOneNode(rnd, p.Children()))
 }
 
 func BranchingFactor(n node.Node) int {

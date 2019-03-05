@@ -50,11 +50,12 @@ func (f *ifelse) SetChildren(ch []node.Node) {
 	if len(ch) != 4 {
 		panic("ifelse node panic on SetChildren")
 	}
-
-	f.Test = ch[0]
-	f.Yes = ch[1]
-	f.No = ch[2]
-	f.Child = ch[3]
+	var out []node.Node
+	copy(out, ch)
+	f.Test = out[0]
+	f.Yes = out[1]
+	f.No = out[2]
+	f.Child = out[3]
 }
 
 func (f *ifelse) Depth() int {

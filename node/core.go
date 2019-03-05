@@ -35,9 +35,10 @@ func (f *BinaryFunction) SetChildren(ch []Node) {
 	if len(ch) != 2 {
 		panic("BinaryFunction only accepts len==2 children arrays")
 	}
-
-	f.L = ch[0]
-	f.R = ch[1]
+	out := make([]Node, len(ch))
+	copy(out, ch)
+	f.L = out[0]
+	f.R = out[1]
 }
 
 func (f *BinaryFunction) Depth() int {

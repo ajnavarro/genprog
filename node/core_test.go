@@ -27,7 +27,7 @@ var fixtures = []struct {
 			terminal.NewNumberVariable(X),
 			terminal.NewNumberVariable(Y),
 		),
-		4.00, //All numbers are floats
+		4, //All numbers are ints
 	},
 	{
 		"multiply and sum 3 variables",
@@ -38,7 +38,7 @@ var fixtures = []struct {
 			),
 			terminal.NewNumberVariable(Z),
 		),
-		7.00, //All numbers are floats
+		7, //All numbers are ints
 	},
 }
 

@@ -17,13 +17,13 @@ type literal struct {
 	t node.Type
 }
 
-func NewNumberLiteralFactory(min, max float64) *node.FactoryNode {
+func NewNumberLiteralFactory(min, max int) *node.FactoryNode {
 	return &node.FactoryNode{
 		Arity: 0,
 		Factory: func(ns []node.Node) node.Node {
 			s := rand.NewSource(time.Now().UnixNano())
 			r := rand.New(s)
-			return NewNumberLiteral(min + r.Float64()*(max-min))
+			return NewNumberLiteral(min + r.Intn(max-min))
 		},
 	}
 }
@@ -32,7 +32,7 @@ func NewStringLiteral(v string) *literal {
 	return &literal{v: v, t: node.String}
 }
 
-func NewNumberLiteral(v float64) *literal {
+func NewNumberLiteral(v int) *literal {
 	return &literal{v: v, t: node.Number}
 }
 

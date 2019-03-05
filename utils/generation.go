@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"math/rand"
+
 	"github.com/ajnavarro/genprog/node"
 )
 
@@ -12,6 +14,7 @@ const (
 )
 
 func GenerateRandomTree(
+	rnd *rand.Rand,
 	functions []*node.FactoryNode,
 	terminals []*node.FactoryNode,
 	maxDepth int,
@@ -19,17 +22,17 @@ func GenerateRandomTree(
 ) node.Node {
 	termLen := float64(len(terminals))
 	funcLen := float64(len(functions))
-	r := getRandom().Float64()
+	r := rnd.Float64()
 	check := termLen / (termLen + funcLen)
 
 	if maxDepth == 0 || (method == GROW && r < check) {
-		return pickOneFactory(terminals).Factory(nil)
+		return pickOneFactory(rnd, terminals).Factory(nil)
 	}
 
-	function := pickOneFactory(functions)
+	function := pickOneFactory(rnd, functions)
 	var nodes []node.Node
 	for i := 0; i < function.Arity; i++ {
-		nodes = append(nodes, GenerateRandomTree(functions, terminals, maxDepth-1, method))
+		nodes = append(nodes, GenerateRandomTree(rnd, functions, terminals, maxDepth-1, method))
 	}
 
 	return function.Factory(nodes)
